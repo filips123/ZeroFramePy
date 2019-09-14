@@ -14,6 +14,9 @@ import re
 
 import websocket
 
+import pkg_resources
+__version__ = pkg_resources.require('zeroframe-ws-client')[0].version
+
 
 CMD_RESPONSE = 'response'
 CMD_PING = 'ping'
@@ -136,7 +139,7 @@ class ZeroFrame:
 
         site_url = 'http' + ('s' if self.instance['secure'] else '') + '://' + self.instance['host'] + ':' + str(self.instance['port']) + '/' + self.site
 
-        wrapper_request = urllib.request.Request(site_url, headers={'Accept': 'text/html'})
+        wrapper_request = urllib.request.Request(site_url, headers={'Accept': 'text/html', 'User-Agent': 'ZeroFramePy/' + __version__})
         wrapper_body = urllib.request.urlopen(wrapper_request).read()
 
         wrapper_key = re.search(r'wrapper_key = "(.*?)"', str(wrapper_body)).group(1)
