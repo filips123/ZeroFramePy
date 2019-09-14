@@ -33,7 +33,7 @@ Alternatively, you can also install it from the source.
 
 ```bash
 git clone https://github.com/filips123/ZeroFramePy.git
-cd ContentHashPy
+cd ZeroFramePy
 python setup.py install
 ```
 
