@@ -14,8 +14,12 @@ import re
 
 import websocket
 
-import pkg_resources
-__version__ = pkg_resources.require('zeroframe-ws-client')[0].version
+
+from pkg_resources import get_distribution, DistributionNotFound
+try:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
+    __version__ = '0.0.0'
 
 
 CMD_RESPONSE = 'response'
