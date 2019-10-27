@@ -36,6 +36,7 @@ class ZeroFrame:
             self,
 
             site,
+            *,
 
             multiuser_master_address=None,
             multiuser_master_seed=None,
