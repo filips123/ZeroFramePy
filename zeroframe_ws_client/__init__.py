@@ -120,7 +120,11 @@ class ZeroFrame:
         :rtype: ZeroFrame
         """
 
-        self.wrapper_key = self._get_wrapper_key()
+        wrapper_headers, wrapper_body = self._create_wrapper_request()
+
+        self.wrapper_user = self._get_wrapper_user(wrapper_headers)
+        self.wrapper_key = self._get_wrapper_key(wrapper_body)
+
         self.websocket = self._get_websocket()
 
         return self.init()
@@ -134,7 +138,61 @@ class ZeroFrame:
         wst.daemon = True
         wst.start()
 
-    def _get_wrapper_key(self):
+    @staticmethod
+    def _create_instance_user(ws_url, old_user, new_user):
+        """
+        Create user on multiuser ZeroNet instance.
+        """
+        conn = websocket.create_connection(ws_url, cookie='master_address=' + old_user)
+
+        conn.send('{"cmd":"userLoginForm","params":[],"id":-1}')
+        conn.recv()
+
+        payload = {
+            'cmd': 'response',
+            'to': 1,
+            'result': new_user,
+            'id': 1
+        }
+
+        conn.send(json.dumps(payload))
+        conn.close()
+
+
+    def _create_wrapper_request(self):
+        """
+        Create and return wrapper request.
+
+        :return: wrapper headers and body
+        :rtype: (str, str)
+        """
+
+        site_url = 'http' + ('s' if self.instance['secure'] else '') + '://' + self.instance['host'] + ':' + str(self.instance['port']) + '/' + self.site
+
+        wrapper_request = urllib.request.Request(site_url, headers={'Accept': 'text/html', 'User-Agent': 'ZeroFramePy/' + __version__})
+        wrapper_response = urllib.request.urlopen(wrapper_request)
+
+        wrapper_headers = wrapper_response.info()
+        wrapper_body = wrapper_response.read()
+
+        return (wrapper_headers, wrapper_body)
+
+    @staticmethod
+    def _get_wrapper_user(wrapper_headers):
+        """
+        Get and return wrapper user.
+
+        :return: wrapper user
+        :rtype: (str|None)
+        """
+
+        try:
+            return re.search(r'master_address=([^;]+)', str(wrapper_headers)).group(1)
+        except AttributeError:
+            return None
+
+    @staticmethod
+    def _get_wrapper_key(wrapper_body):
         """
         Get and return wrapper key.
 
@@ -142,13 +200,7 @@ class ZeroFrame:
         :rtype: str
         """
 
-        site_url = 'http' + ('s' if self.instance['secure'] else '') + '://' + self.instance['host'] + ':' + str(self.instance['port']) + '/' + self.site
-
-        wrapper_request = urllib.request.Request(site_url, headers={'Accept': 'text/html', 'User-Agent': 'ZeroFramePy/' + __version__})
-        wrapper_body = urllib.request.urlopen(wrapper_request).read()
-
-        wrapper_key = re.search(r'wrapper_key = "(.*?)"', str(wrapper_body)).group(1)
-        return wrapper_key
+        return re.search(r'wrapper_key = "(.*?)"', str(wrapper_body)).group(1)
 
     def _get_websocket(self):
         """
@@ -160,10 +212,18 @@ class ZeroFrame:
 
         ws_url = 'ws' + ('s' if self.instance['secure'] else '') + '://' + self.instance['host'] + ':' + str(self.instance['port']) + '/Websocket?wrapper_key=' + self.wrapper_key
 
-        if not self.multiuser['master_address']:
+        if not self.wrapper_user and not self.multiuser['master_address']:
             ws_client = websocket.WebSocketApp(ws_url)
-        else:
+
+        elif self.multiuser['master_address'] and not self.multiuser['master_seed']:
             ws_client = websocket.WebSocketApp(ws_url, cookie='master_address=' + self.multiuser['master_address'])
+
+        elif self.multiuser['master_address'] and self.multiuser['master_seed']:
+            self._create_instance_user(ws_url, self.wrapper_user, self.multiuser['master_seed'])
+            ws_client = websocket.WebSocketApp(ws_url, cookie='master_address=' + self.multiuser['master_address'])
+
+        else:
+            ws_client = websocket.WebSocketApp(ws_url, cookie='master_address=' + self.wrapper_user)
 
         ws_client.on_message = self._on_request
         ws_client.on_open = self._on_open_websocket
