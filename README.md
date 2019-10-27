@@ -55,7 +55,7 @@ To create a connection, you need to specify the ZeroNet site address.
 zeroframe = ZeroFrame('1HeLLo4uzjaLetFx6NH3PMwFP3qbRbTf3D')
 ```
 
-If ZeroNet instance is using `Multiuser` plugin, you need to specify a master address of the account you want to use. Account must already exist on the instance.
+If ZeroNet instance is using `Multiuser` plugin and you want to use specific account, you need to specify a master address of the account you want to use. Account must already exist on the instance.
 
 ```py
 zeroframe = ZeroFrame(
@@ -64,7 +64,7 @@ zeroframe = ZeroFrame(
 )
 ```
 
-If you want to create a new account, you also need to specify a master seed of it. Note that this feature is unsafe on the untrusted proxy. Also, it is currently not implemented yet.
+If you want to create a new account, you also need to specify a master seed of it. Note that this feature is unsafe on the untrusted proxy.
 
 ```py
 zeroframe = ZeroFrame(
