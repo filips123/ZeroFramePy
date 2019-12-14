@@ -7,3 +7,7 @@ include example.py
 
 # Package Code
 graft zeroframe_ws_client
+
+# Ignore Cache
+global-exclude *.py[co]
+global-exclude __pycache__
