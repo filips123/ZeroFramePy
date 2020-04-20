@@ -421,7 +421,7 @@ class ZeroFrame:
         Send command to ZeroFrame server and call callback.
 
         :param str cmd: name of command to send
-        :param dict params: parameters of command to send
+        :param any params: parameters of command to send
         :param callable cb: command callback
         """
 
@@ -444,7 +444,7 @@ class ZeroFrame:
         `ZeroFrame API Reference <https://zeronet.io/docs/site_development/zeroframe_api_reference/>`_
 
         :param str cmd: name of command to send
-        :param dict params: parameters of command to send
+        :param any params: parameters of command to send
 
         :return: command response
         :rtype: asyncio.Future<(dict|str)>
