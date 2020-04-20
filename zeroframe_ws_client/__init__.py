@@ -480,7 +480,7 @@ class ZeroFrame:
             'result': result
         })
 
-    def close():
+    def close(self):
         """
         Close websocket connection.
         """
