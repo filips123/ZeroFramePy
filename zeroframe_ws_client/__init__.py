@@ -78,6 +78,7 @@ class ZeroFrame:
         self.reconnect = {'attempts': reconnect_attempts, 'delay': reconnect_delay}
 
         self.websocket_connected = False
+        self.websocket_closing = False
         self.waiting_callbacks = {}
         self.waiting_messages = []
         self.next_message_id = 1
@@ -212,16 +213,20 @@ class ZeroFrame:
 
         ws_url = 'ws' + ('s' if self.instance['secure'] else '') + '://' + self.instance['host'] + ':' + str(self.instance['port']) + '/Websocket?wrapper_key=' + self.wrapper_key
 
+        # Connection to instance without Multiuser plugin
         if not self.wrapper_user and not self.multiuser['master_address']:
             ws_client = websocket.WebSocketApp(ws_url)
 
+        # Connection to Multiuser instance with stored master seed
         elif self.multiuser['master_address'] and not self.multiuser['master_seed']:
             ws_client = websocket.WebSocketApp(ws_url, cookie='master_address=' + self.multiuser['master_address'])
 
+        # Connection to Multiuser instance without stored master seed
         elif self.multiuser['master_address'] and self.multiuser['master_seed']:
             self._create_instance_user(ws_url, self.wrapper_user, self.multiuser['master_seed'])
             ws_client = websocket.WebSocketApp(ws_url, cookie='master_address=' + self.multiuser['master_address'])
 
+        # Connection to Multiuser instance with instance-provided account
         else:
             ws_client = websocket.WebSocketApp(ws_url, cookie='master_address=' + self.wrapper_user)
 
@@ -307,9 +312,15 @@ class ZeroFrame:
 
         self.on_close_websocket()
 
+        # Don't attempt reconnection if user closes socket
+        if self.websocketClosing:
+            return
+
+        # Don't attempt reconnection if reconnection is disabled
         if self.reconnect['attempts'] == 0:
             return
 
+        # Don't attempt reconnection if attempts has exceeded maximum number
         if self.reconnect['attempts'] != -1 and self.next_attempt_id > self.reconnect['attempts']:
             return
 
@@ -468,3 +479,12 @@ class ZeroFrame:
             'to': to,
             'result': result
         })
+
+    def close():
+        """
+        Close websocket connection.
+        """
+
+        self.websocket_closing = True
+        self.websocket.close()
+        self.on_close_websocket()

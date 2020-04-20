@@ -167,6 +167,14 @@ class ZeroApp(ZeroFrame):
         self.error('WebSocket connection closed')
 ```
 
+### Closing Connection
+
+You can use `close` method to close WebSocket connection to ZeroFrame API.
+
+```py
+zeroframe.close()
+```
+
 ### Calling Commands Directly
 
 You can also directly call commands via `__getattr__` method. Command name is accepted as an object's property and parameters are accepted as a method's arguments. Command returns `asyncio.Future` with the result.
