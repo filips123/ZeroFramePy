@@ -313,7 +313,7 @@ class ZeroFrame:
         self.on_close_websocket()
 
         # Don't attempt reconnection if user closes socket
-        if self.websocketClosing:
+        if self.websocket_closing:
             return
 
         # Don't attempt reconnection if reconnection is disabled
